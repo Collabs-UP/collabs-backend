@@ -58,11 +58,11 @@ export class AuthService {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        const token = this.jwtService.signAsync({
+        const token = await this.jwtService.signAsync({
             sub: user.id,
             email: user.email,
             name: user.name,
-        });
+        });;
 
         return {
             access_token: token,
