@@ -1,6 +1,6 @@
 import { IsString, MinLength } from "class-validator";
 
-export class CreateWokspaceDto {
+export class CreateWorkspaceDto {
     @IsString()
     @MinLength(3)
     projectName!: string

@@ -1,7 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { CreateWokspaceDto } from "../dto/CreateWorkspaceDto";
+import { CreateWorkspaceDto } from "../dto/CreateWorkspaceDto";
 import { WorkspaceRole } from "@prisma/client";
+import { JoinWorkspaceDto } from "../dto/JoinWorkspaceDto";
 
 @Injectable()
 export class WorkspacesService {
@@ -17,7 +18,7 @@ export class WorkspacesService {
         throw new Error('Could not generate unique access code');
     }
 
-    async createWorkspace(userId: string, dto: CreateWokspaceDto) {
+    async createWorkspace(userId: string, dto: CreateWorkspaceDto) {
         const accessCode = await this.generateAccessCode();
 
         const workspace = await this.prisma.$transaction(async (tx) => {
@@ -48,6 +49,55 @@ export class WorkspacesService {
             accessCode: workspace.accessCode,
             role: 'OWNER',
             createdAt: workspace.creationDate,
+        };
+    }
+
+    async joinWorkspace(userId: string, dto: JoinWorkspaceDto) {
+        const normalizedCode = dto.accessCode.toUpperCase();
+
+        const workspace = await this.prisma.workspace.findUnique({
+            where: { accessCode: normalizedCode },
+        });
+
+        if (!workspace) {
+            throw new NotFoundException("Workspace not found");
+        }
+
+        const alreadyMember = await this.prisma.member.findUnique({
+            where: {
+                userId_workspaceId: {
+                    userId,
+                    workspaceId: workspace.id,
+                },
+            },
+        });
+
+        if (alreadyMember) {
+            throw new ConflictException("User is already in the workspace");
+        }
+
+        const membership = await this.prisma.member.create({
+            data: {
+                userId,
+                workspaceId: workspace.id,
+                role: WorkspaceRole.MEMBER,
+            },
+            select: {
+                id: true,
+                role: true, 
+                joinedAt: true,
+            },
+        });
+
+        return {
+            message: "Joined workspace successfully",
+            workspace: {
+                id: workspace.id,
+                projectName: workspace.projectName,
+                description: workspace.description,
+                accessCode: workspace.accessCode,
+            },
+            membership,
         };
     }
 }
