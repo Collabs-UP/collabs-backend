@@ -63,4 +63,48 @@ export class TaskService {
             task,
         };
     }
+
+    async updateTaskStatus(taskId: string, userId: string, status: TaskStatus) {
+
+        const task = await this.prisma.task.findUnique({
+            where: { id: taskId },
+            select: {
+                id: true,
+                assignedToId: true,
+                status: true,
+            },
+        });
+
+        if (!task) {
+            throw new NotFoundException('Task not found');
+        }
+
+        if (task.assignedToId !== userId) {
+            throw new ForbiddenException('Only the assignee can update the task status');
+        }
+
+        const updatedTask = await this.prisma.task.update({
+            where: { id: taskId },
+            data: { status },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                status: true,
+                dueDate: true,
+                assignedTo: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+
+        return {
+            message: "Task status updated successfully",
+            task: updatedTask,
+        }
+    }
 }
