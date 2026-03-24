@@ -1,7 +1,7 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateWorkspaceDto } from "../dto/CreateWorkspaceDto";
-import { WorkspaceRole } from "@prisma/client";
+import { TaskStatus, WorkspaceRole } from "@prisma/client";
 import { JoinWorkspaceDto } from "../dto/JoinWorkspaceDto";
 
 @Injectable()
@@ -158,6 +158,91 @@ export class WorkspacesService {
                     },
                 };
             }),
+        };
+    }
+
+    async getWorkspaceMembers(workspaceId: string, userId: string) {
+        const workspace = await this.prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: { id: true },
+        });
+
+        if (!workspace) {
+        throw new NotFoundException("Workspace not found");
+        }
+
+        const requesterMembership = await this.prisma.member.findUnique({
+        where: {
+            userId_workspaceId: {
+            userId,
+            workspaceId,
+            },
+        },
+        });
+
+        if (!requesterMembership) {
+        throw new ForbiddenException("You are not a member of this workspace");
+        }
+
+        const members = await this.prisma.member.findMany({
+        where: { workspaceId },
+        include: {
+            user: {
+            select: {
+                id: true,
+                name: true,
+                email: true,
+            },
+            },
+        },
+        orderBy: {
+            joinedAt: "asc",
+        },
+        });
+
+        const membersWithStats = await Promise.all(
+            members.map(async (member) => {
+                const assignedTasks = await this.prisma.task.count({
+                where: {
+                    workspaceId,
+                    assignedToId: member.userId,
+                },
+                });
+
+                const completedTasks = await this.prisma.task.count({
+                    where: {
+                        workspaceId,
+                        assignedToId: member.userId,
+                        status: TaskStatus.COMPLETED,
+                    },
+                });
+
+                const inProcessTasks = await this.prisma.task.count({
+                    where: {
+                        workspaceId,
+                        assignedToId: member.userId,
+                        status: TaskStatus.IN_PROCESS,
+                    },
+                });
+
+                return {
+                    id: member.user.id,
+                    name: member.user.name,
+                    email: member.user.email,
+                    role: member.role,
+                    joined_at: member.joinedAt,
+                    task_stats: {
+                        assigned_tasks: assignedTasks,
+                        completed_tasks: completedTasks,
+                        in_process_tasks: inProcessTasks,
+                    },
+                };
+            }),
+        );
+
+        return {
+        workspace_id: workspaceId,
+        members: membersWithStats,
         };
     }
 }
