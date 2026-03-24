@@ -107,4 +107,66 @@ export class TaskService {
             task: updatedTask,
         }
     }
+
+    async listTasks(workspaceId: string, userId: string, status?: TaskStatus) {
+        const membership = await this.prisma.member.findUnique({
+            where: {
+                userId_workspaceId: {
+                    userId,
+                    workspaceId,
+                },
+            },
+        });
+
+        if (!membership) {
+            throw new ForbiddenException('You are not a member of this workspace');
+        }
+
+        const tasks = await this.prisma.task.findMany({
+            where: {
+                workspaceId,
+                ...(status ? { status } : {}),
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                status: true,
+                creationDate: true,
+                dueDate: true,
+                assignedTo: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+            orderBy: {
+                creationDate: 'desc',
+            },
+        });
+
+        const totalTasks = await this.prisma.task.count({where: { workspaceId } });
+
+        const completedTasks = await this.prisma.task.count({
+            where: { workspaceId, status: TaskStatus.COMPLETED},
+        });
+
+        const inProcessTasks = await this.prisma.task.count({
+            where: { workspaceId, status: TaskStatus.IN_PROCESS },
+        });
+
+        return {
+            workspaceId: workspaceId,
+            tasks,
+            summary: {
+                totalTasks: totalTasks,
+                completedTasks: completedTasks,
+                inProcessTasks: inProcessTasks,
+                progressPercentage: totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100),
+            },
+        };
+
+    }
 }

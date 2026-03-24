@@ -100,4 +100,64 @@ export class WorkspacesService {
             membership,
         };
     }
+
+    async getMyWorkspaces( userId: string) {
+        const memberships = await this.prisma.member.findMany({
+            where: { userId },
+            include: {
+                workspace: {
+                    include: {
+                        owner: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                            },
+                        },
+                        tasks: {
+                            select: {
+                                id: true,
+                                status: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                joinedAt: 'desc',
+            },
+        });
+
+        return {
+            data: memberships.map((membership) => {
+                const workspace = membership.workspace;
+                const totalTasks = workspace.tasks.length;
+                const completedTasks = workspace.tasks.filter(
+                    (task) => task.status === "COMPLETED",
+                ).length;
+                const inProcessTasks = workspace.tasks.filter(
+                    (task) => task.status === "IN_PROCESS",
+                ).length;
+
+                return {
+                    id: workspace.id,
+                    project_name: workspace.projectName,
+                    description: workspace.description,
+                    access_code: workspace.accessCode,
+                    role: membership.role,
+                    created_at: workspace.creationDate,
+                    owner: workspace.owner,
+                    stats: {
+                        total_tasks: totalTasks,
+                        completed_tasks: completedTasks,
+                        in_process_tasks: inProcessTasks,
+                        progress_percentage:
+                            totalTasks === 0
+                                ? 0
+                                : Math.round((completedTasks / totalTasks) * 100),
+                    },
+                };
+            }),
+        };
+    }
 }
