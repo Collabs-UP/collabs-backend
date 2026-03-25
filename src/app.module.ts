@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './services/auth/auth.module';
 import { WorkspacesModule } from './services/workspaces/workspaces.module';
 import { TaskModule } from './services/task/task.module';
+import { UserModule } from './services/users/users.module';
 
 @Module({
   imports: [
@@ -11,7 +12,8 @@ import { TaskModule } from './services/task/task.module';
     PrismaModule,
     AuthModule,
     WorkspacesModule,
-    TaskModule
+    TaskModule,
+    UserModule
   ],
 })
 export class AppModule {}
