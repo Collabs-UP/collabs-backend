@@ -1,8 +1,9 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateWorkspaceDto } from "../dto/CreateWorkspaceDto";
 import { TaskStatus, WorkspaceRole } from "@prisma/client";
 import { JoinWorkspaceDto } from "../dto/JoinWorkspaceDto";
+import { UpdateWorkspaceDto } from "../dto/UpdateWorkspaceDto";
 
 @Injectable()
 export class WorkspacesService {
@@ -50,6 +51,52 @@ export class WorkspacesService {
             role: 'OWNER',
             createdAt: workspace.creationDate,
         };
+    }
+
+    async updateWorkspace(workspaceId: string, userId: string, dto: UpdateWorkspaceDto) {
+        const workspace = await this.prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: { id: true, ownerId: true },
+        });
+
+        if(!workspace) {
+            throw new NotFoundException("Workspace not found");
+        }
+
+        if(workspace.ownerId !== userId) {
+            throw new ForbiddenException("Only the owner can update workspace");
+        }
+
+        if (!dto.projectName && !dto.description) {
+            throw new BadRequestException("At least one field must be provided");
+        }
+
+
+        const updated = await this.prisma.workspace.update({
+            where: { id: workspaceId },
+            data: {
+                ...(dto.projectName ? { projectName: dto.projectName } : {}),
+                ...(dto.description ? { description: dto.description } : {}),
+            },
+            select: {
+                id: true,
+                projectName: true,
+                description: true,
+                accessCode: true,
+                creationDate: true,
+            },
+        });
+
+        return {
+            message: "Workspace updated successfully",
+            workspace: {
+                id: updated.id,
+                projectName: updated.projectName,
+                description: updated.description,
+                accessCode: updated.accessCode,
+                createdAt: updated.creationDate,
+            }
+        }
     }
 
     async joinWorkspace(userId: string, dto: JoinWorkspaceDto) {
