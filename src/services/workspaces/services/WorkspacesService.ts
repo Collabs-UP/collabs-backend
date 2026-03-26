@@ -292,4 +292,25 @@ export class WorkspacesService {
         members: membersWithStats,
         };
     }
+
+    async deleteWorkspace(workspaceId: string, userId: string) {
+        const workspace = await this.prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: { id: true, ownerId: true },
+        });
+
+        if (!workspace) {
+            throw new NotFoundException("Workspace not found");
+        }
+
+        if (workspace.ownerId !== userId) {
+            throw new ForbiddenException("Only the owner can delete this workspace");
+        }
+
+        await this.prisma.workspace.delete({
+            where: { id: workspaceId },
+        });
+
+        return { message: "Workspace deleted successfully" };
+    }
 }
