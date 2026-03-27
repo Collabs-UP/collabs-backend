@@ -169,4 +169,23 @@ export class TaskService {
         };
 
     }
+
+    async removeTask(workspaceId: string, taskId: string) {
+    const task = await this.prisma.task.findFirst({
+      where: { 
+        id: taskId,
+        workspaceId: workspaceId 
+      },
+    });
+
+    if (!task) {
+      throw new NotFoundException('Tarea no encontrada en este proyecto');
+    }
+
+    await this.prisma.task.delete({
+      where: { id: taskId },
+    });
+
+    return { message: 'Tarea eliminada exitosamente' };
+  }
 }

@@ -104,6 +104,7 @@ export class WorkspacesService {
 
         const workspace = await this.prisma.workspace.findUnique({
             where: { accessCode: normalizedCode },
+            include: {owner: true}
         });
 
         if (!workspace) {

@@ -14,7 +14,10 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    credentials: true
+  })
   const prisma = app.get(PrismaService);
   
   await app.listen(process.env.PORT ?? 4000);

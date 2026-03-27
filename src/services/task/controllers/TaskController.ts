@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { TaskService } from "../services/TaskService";
 import { JwtAuthGuard } from "src/services/auth/guards/JwtAuthGuard";
 import { CreateTaskDto } from "../dto/CreateTaskDto";
@@ -28,5 +28,15 @@ export class TaskController {
         @Query() query: ListTaskDto,
     ) {
         return this.taskService.listTasks(workspaceId, req.user.id, query.status);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete(':taskId')
+    @HttpCode(HttpStatus.OK)
+    async removeTask(
+        @Param('workspaceId') workspaceId: string,
+        @Param('taskId') taskId: string,
+    ) {
+        return this.taskService.removeTask(workspaceId, taskId); 
     }
 }
