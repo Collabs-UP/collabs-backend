@@ -10,8 +10,6 @@ export const ENV_KEYS = {
 } as const;
 
 export const DEFAULT_PORT = 4000;
-export const DEFAULT_DATABASE_URL =
-  'postgresql://postgres:postgres@localhost:5432/collabs?schema=public';
 export const DEFAULT_JWT_EXPIRES_IN = '1d';
 export const DEFAULT_CORS_ORIGIN = 'http://localhost:3000';
 export const DEFAULT_NODE_ENV = 'development';
@@ -82,8 +80,10 @@ export function validateEnvironment(
 ): AppEnvironment {
   return {
     PORT: readPort(config[ENV_KEYS.PORT]),
-    DATABASE_URL:
-      readString(config[ENV_KEYS.DATABASE_URL]) ?? DEFAULT_DATABASE_URL,
+    DATABASE_URL: readRequiredString(
+      config[ENV_KEYS.DATABASE_URL],
+      ENV_KEYS.DATABASE_URL,
+    ),
     JWT_SECRET: readRequiredString(
       config[ENV_KEYS.JWT_SECRET],
       ENV_KEYS.JWT_SECRET,
