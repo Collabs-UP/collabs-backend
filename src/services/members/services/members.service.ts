@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service'; 
+import { PrismaService } from '../../../prisma/prisma.service';
 
 @Injectable()
 export class MembersService {
@@ -7,12 +7,11 @@ export class MembersService {
 
   // El parámetro ahora es conceptualmente el userId
   async removeMember(workspaceId: string, userId: string) {
-    
     // 1. Buscamos la relación exacta combinando el espacio y el usuario
     const membership = await this.prisma.member.findFirst({
-      where: { 
+      where: {
         workspaceId: workspaceId,
-        userId: userId
+        userId: userId,
       },
     });
 
@@ -44,6 +43,8 @@ export class MembersService {
       where: { id: membership.id },
     });
 
-    return { message: 'Miembro eliminado y tareas reasignadas al administrador' };
+    return {
+      message: 'Miembro eliminado y tareas reasignadas al administrador',
+    };
   }
 }

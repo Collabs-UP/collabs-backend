@@ -1,6 +1,8 @@
+import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ENV_KEYS } from './config/env';
 import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
@@ -14,12 +16,16 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.enableCors({
-    origin: 'http://localhost:3000',
-    credentials: true
-  })
-  const prisma = app.get(PrismaService);
-  
-  await app.listen(process.env.PORT ?? 4000);
+
+  const configService = app.get(ConfigService);
+  void app.enableCors({
+    origin: configService.getOrThrow<string>(ENV_KEYS.CORS_ORIGIN),
+    credentials: true,
+  });
+
+  app.get(PrismaService);
+
+  await app.listen(configService.getOrThrow<number>(ENV_KEYS.PORT));
 }
-bootstrap();
+
+void bootstrap();

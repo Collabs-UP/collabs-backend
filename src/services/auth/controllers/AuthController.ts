@@ -1,26 +1,44 @@
-import { Body, Controller, Get, Post, Request, UseGuards } from "@nestjs/common";
-import { AuthService } from "../services/AuthService";
-import { RegisterDto } from "../dto/RegisterDto";
-import { LoginDto } from "../dto/LoginDto";
-import { JwtAuthGuard } from "../guards/JwtAuthGuard";
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import type { Request as ExpressRequest } from 'express';
+import { AuthService } from '../services/AuthService';
+import { RegisterDto } from '../dto/RegisterDto';
+import { LoginDto } from '../dto/LoginDto';
+import { JwtAuthGuard } from '../guards/JwtAuthGuard';
+
+type AuthenticatedUser = {
+  id: string;
+  email: string;
+  name: string;
+};
+
+type AuthenticatedRequest = ExpressRequest & {
+  user: AuthenticatedUser;
+};
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-    @Post('register')
-    register(@Body() dto: RegisterDto) {
-        return this.authService.register(dto)
-    }
+  @Post('register')
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
 
-    @Post('login')
-    login(@Body() dto: LoginDto) {
-        return this.authService.login(dto)
-    }
+  @Post('login')
+  login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
 
-    @Get('me')
-    @UseGuards(JwtAuthGuard)
-    getMe(@Request() req: any) {
-        return req.user
-    }
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getMe(@Request() req: AuthenticatedRequest) {
+    return req.user;
+  }
 }

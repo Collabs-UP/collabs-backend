@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { defineConfig } from 'prisma/config';
+import { DEFAULT_DATABASE_URL } from './src/config/env';
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',
@@ -7,8 +8,6 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url:
-      process.env['DATABASE_URL'] ??
-      'postgresql://postgres:postgres@localhost:5432/collabs?schema=public',
+    url: process.env['DATABASE_URL'] ?? DEFAULT_DATABASE_URL,
   },
 });

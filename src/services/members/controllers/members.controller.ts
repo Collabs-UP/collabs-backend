@@ -1,4 +1,10 @@
-import { Controller, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Param,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { MembersService } from '../services/members.service';
 
 @Controller('workspaces')
