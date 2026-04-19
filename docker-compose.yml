@@ -3,15 +3,15 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: collabs
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d collabs"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -25,14 +25,14 @@ services:
       db:
         condition: service_healthy
     environment:
-      NODE_ENV: production
-      PORT: ${PORT:-4000}
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/collabs?schema=public}
-      JWT_SECRET: ${JWT_SECRET:-change-me}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      PORT: ${PORT}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      NODE_ENV: ${NODE_ENV}
     ports:
-      - "${PORT:-4000}:4000"
+      - "${PORT}:4000"
 
 volumes:
   postgres_data:

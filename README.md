@@ -9,17 +9,31 @@ npm run start:dev
 
 ## Docker
 
-Levantar la API y PostgreSQL con Docker Compose:
+Para levantar la API y PostgreSQL con Docker Compose:
+
+1. Copia la plantilla de Docker:
 
 ```bash
-docker compose up --build
+copy .env.compose.example .env.compose
+```
+
+2. Ajusta los valores si lo necesitas.
+3. Levanta los servicios usando ese archivo de entorno:
+
+```bash
+docker compose --env-file .env.compose up --build
 ```
 
 La API quedará disponible en `http://localhost:4000` y la base de datos en `localhost:5432`.
 
 ## Variables de entorno
 
-Copia `.env.example` a `.env` y ajusta los valores según tu entorno.
+Hay dos archivos de ejemplo:
+
+- `.env.example`: para ejecutar la app fuera de Docker.
+- `.env.compose.example`: para ejecutar `docker compose`.
+
+Copia el que corresponda a tu flujo y renómbralo como archivo real.
 
 Variables soportadas por `src/config/index.ts`:
 
