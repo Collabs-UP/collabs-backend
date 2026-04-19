@@ -26,10 +26,10 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      PORT: ${PORT:-3000}
+      PORT: ${PORT:-4000}
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/collabs?schema=public}
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-4000}:4000"
 
 volumes:
   postgres_data:

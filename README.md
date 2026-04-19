@@ -15,7 +15,7 @@ Levantar la API y PostgreSQL con Docker Compose:
 docker compose up --build
 ```
 
-La API quedará disponible en `http://localhost:3000` y la base de datos en `localhost:5432`.
+La API quedará disponible en `http://localhost:4000` y la base de datos en `localhost:5432`.
 
 ## Variables de entorno
 

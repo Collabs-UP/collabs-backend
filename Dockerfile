@@ -1,6 +1,6 @@
 FROM node:22-alpine AS base
 WORKDIR /app
-ENV DATABASE_URL=postgresql://postgres:postgres@localhost:5432/collabs?schema=public
+ENV DATABASE_URL postgresql://postgres:postgres@localhost:5432/collabs?schema=public
 
 COPY package*.json ./
 RUN npm ci
@@ -10,19 +10,18 @@ COPY prisma.config.ts ./
 COPY tsconfig*.json nest-cli.json ./
 COPY src ./src
 
-RUN npx prisma generate && npm run build
+RUN npm run build
 
 FROM node:22-alpine AS production
 WORKDIR /app
-ENV NODE_ENV=production
+ENV NODE_ENV production
 
 COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY --from=base /app/dist ./dist
-COPY --from=base /app/generated ./generated
+COPY --from=base /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=base /app/prisma ./prisma
-COPY --from=base /app/prisma.config.ts ./prisma.config.ts
 
-EXPOSE 3000
+EXPOSE 4000
 CMD ["node", "dist/main"]
