@@ -7,6 +7,9 @@ export const ENV_KEYS = {
   JWT_EXPIRES_IN: 'JWT_EXPIRES_IN',
   CORS_ORIGIN: 'CORS_ORIGIN',
   NODE_ENV: 'NODE_ENV',
+  GOOGLE_CLIENT_ID: 'GOOGLE_CLIENT_ID',
+  GOOGLE_CLIENT_SECRET: 'GOOGLE_CLIENT_SECRET',
+  GOOGLE_CALLBACK_URL: 'GOOGLE_CALLBACK_URL',
 } as const;
 
 export const DEFAULT_PORT = 4000;
@@ -23,6 +26,9 @@ export interface AppEnvironment {
   JWT_EXPIRES_IN: JwtExpiresIn;
   CORS_ORIGIN: string;
   NODE_ENV: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+  GOOGLE_CALLBACK_URL: string;
 }
 
 function readString(value: unknown): string | undefined {
@@ -92,5 +98,17 @@ export function validateEnvironment(
     CORS_ORIGIN:
       readString(config[ENV_KEYS.CORS_ORIGIN]) ?? DEFAULT_CORS_ORIGIN,
     NODE_ENV: readString(config[ENV_KEYS.NODE_ENV]) ?? DEFAULT_NODE_ENV,
+    GOOGLE_CLIENT_ID: readRequiredString(
+      config[ENV_KEYS.GOOGLE_CLIENT_ID],
+      ENV_KEYS.GOOGLE_CLIENT_ID,
+    ),
+    GOOGLE_CLIENT_SECRET: readRequiredString(
+      config[ENV_KEYS.GOOGLE_CLIENT_SECRET],
+      ENV_KEYS.GOOGLE_CLIENT_SECRET,
+    ),
+    GOOGLE_CALLBACK_URL: readRequiredString(
+      config[ENV_KEYS.GOOGLE_CALLBACK_URL],
+      ENV_KEYS.GOOGLE_CALLBACK_URL,
+    ),
   };
 }
