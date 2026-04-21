@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ENV_KEYS, type JwtExpiresIn } from '../../config/env';
 import { AuthController } from './controllers/AuthController';
 import { JwtStrategy } from './guards/JwtStrategy';
+import { GoogleStrategy } from './guards/GoogleStrategy';
 import { AuthService } from './services/AuthService';
 
 @Module({
@@ -25,7 +26,7 @@ import { AuthService } from './services/AuthService';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}
