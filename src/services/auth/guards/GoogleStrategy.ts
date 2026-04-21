@@ -5,10 +5,8 @@ import { Profile, Strategy } from 'passport-google-oauth20';
 import { ENV_KEYS } from '../../../config/env';
 
 type GoogleUserProfile = {
-  googleId: string;
   email: string;
   name: string;
-  picture: string | null;
 };
 
 @Injectable()
@@ -29,7 +27,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: (error: Error | null, user?: GoogleUserProfile | false) => void,
   ): Promise<void> {
     const email = profile.emails?.[0]?.value?.trim().toLowerCase();
-    const picture = profile.photos?.[0]?.value ?? null;
     const name =
       profile.displayName?.trim() ||
       [profile.name?.givenName, profile.name?.familyName]
@@ -45,11 +42,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     }
 
     return done(null, {
-      googleId: profile.id,
       email,
       name,
-      picture,
     });
   }
 }
-
